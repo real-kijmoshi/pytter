@@ -1,28 +1,28 @@
 from pytter import app, db, bcrypt
 from flask import request
-from flask_cors import cross_origin
+from flask_cors import CORS
 from pytter.models import User, Tweet, Like
 import re
 
 
 EMAIL_REGEX = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 
+cors = CORS(app)
+
 @app.route("/ping")
-@cross_origin(origin='http://localhost:3000')
 def ping():
     return "pong"
 
 @app.route("/whoami")
-@cross_origin(origin='http://localhost:3000', headers=['Authorization'])
 def whoami():
     return {
         "username": "John Doe",
-        "display_name": "John Doe",
+        "display_name": "john.doe@email.com",
+        "avatar": "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50"
     }
 
 
 @app.route("/register", methods=["POST"])
-@cross_origin(origin='http://localhost:3000', headers=['Authorization'])
 def register():
     data = dict(request.json)
     if len(data["username"]) < 3 or len(data["username"]) > 20:

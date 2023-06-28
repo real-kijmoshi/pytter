@@ -1,15 +1,21 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChevronRight } from "react-bootstrap-icons";
 
-export default function Home() {
-  const [postContent, setPostContent] = useState<string>("");
-  const [token, setToken] = useState<string>("");
-  const [error, setError] = useState<string>("");
+import { SERVER_ADRESS } from "@/config.json";
 
-  useEffect(() => {
-    setToken(localStorage.getItem("token") || "");
-  }, []);
+interface UserExtended {
+  username: string;
+  display_name: string;
+  avatar: string;
+
+  // extended
+  token: string;
+}
+
+export default function Home({ user }: { user: UserExtended | null }) {
+  const [postContent, setPostContent] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   const handlePost = () => {
     if (postContent.length < 1) {
@@ -25,7 +31,7 @@ export default function Home() {
         {},
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${user?.token}`,
           },
           data: {
             content: postContent,
@@ -47,7 +53,7 @@ export default function Home() {
 
   return (
     <div className={`content-center w-full flex flex-col items-center`}>
-      {token && (
+      {user?.username && (
         <div
           className={`flex flex-col space-x-2xl w-2/3 h-fit rounded shadow-lg border border-[#e6e6e6] text-center pl-10 pr-3 py-3 mt-10`}
         >
@@ -72,3 +78,21 @@ export default function Home() {
     </div>
   );
 }
+
+export const getServerSideProps = async (ctx: any) => {
+  const token = ctx.req.cookies.token;
+
+  if (token) {
+    const res = await axios.get(SERVER_ADRESS + "/whoami", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.status === 200) {
+      return { props: { user: { ...res.data, token } } };
+    }
+  }
+
+  return { props: { user: null } };
+};

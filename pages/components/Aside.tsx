@@ -2,6 +2,7 @@
 import Link from "next/link";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useCookies } from "react-cookie";
 
 import config from "@/config.json";
 
@@ -9,55 +10,41 @@ const SERVER_ADRESS = config.SERVER_ADRESS;
 
 //const SERVER_ADRESS = "http:///127.0.0.1:5000";
 
-interface whioAmIaccount {
+interface User {
   username: string;
-  displayName: string;
+  display_name: string;
   avatar: string;
 }
 
 export default function Aside() {
-  const [userData, setUserData] = useState<whioAmIaccount | undefined>();
+  const [userData, setUserData] = useState<User | undefined>();
   const [visible, setVisible] = useState<boolean>(false);
 
+  const [cookies, setCookie, removeCookie] = useCookies(["token"]);
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = cookies.token;
 
     if (token) {
       axios
-        .get(
-          SERVER_ADRESS + "/whoami",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
+        .get(SERVER_ADRESS + "/whoami", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
         .then((res) => {
-          if(res.status != 200) {
-            localStorage.removeItem("token");
-            location.href = "/";
+          if (res.status === 200) {
+            setUserData(res.data);
+          } else {
+            removeCookie("token");
           }
-          setUserData(res.data);
         })
         .catch((err) => {
           console.log(err);
-          if (err.response?.status != 200) {
-            axios
-              .get(SERVER_ADRESS + "/ping", {})
-              .then((res) => {
-                if (res.data != "pong") {
-                  alert("Server is down please try again later");
-                }
-              })
-              .catch((err) => {
-                alert(
-                  "Server is down please try again later or contact with server admin (kijmoshi.xyz discord: @kijmoshi or @mertane.)"
-                );
-              });
-          }
         });
     }
-  }, []);
+  }, [cookies.token, removeCookie]);
+
   return (
     <aside
       className={`w-32 sm:w-64 h-screen bg-white border border-[#e6e6e6] border-right `}
@@ -76,7 +63,7 @@ export default function Aside() {
                 alt={userData.username}
                 className={`rounded-full sm:m-2 mx-auto`}
               />
-              <h1 className={`text-center`}>{userData.displayName}</h1>
+              <h1 className={`text-center`}>{userData.display_name}</h1>
             </div>
             {visible && (
               <div
@@ -91,8 +78,8 @@ export default function Aside() {
 
                 <div
                   onClick={() => {
-                    localStorage.removeItem("token");
-                    location.href = "/";
+                    removeCookie("token");
+                    setUserData(undefined);
                   }}
                   className={`p-2 px-10 hover:bg-red-500 hover:text-white`}
                 >
