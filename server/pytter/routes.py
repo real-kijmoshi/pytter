@@ -7,13 +7,18 @@ import re
 
 EMAIL_REGEX = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 
+@app.route("/ping", methods=["GET"])
+@cross_origin(origin='http://localhost:3000', headers=[])
+def ping():
+    return "pong"
+
 @app.route("/whoami")
 @cross_origin(origin='http://localhost:3000', headers=['Authorization'])
 def whoami():
     return {
-        "name": "John Doe",
-        "email": "john.doe@email.com",
-        "age": 42
+        "username": "John Doe",
+        "email": "muw@nacu.ec",
+        "display_name": "John Doe",
     }
 
 
