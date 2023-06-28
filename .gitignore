@@ -26,7 +26,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+*.db
+
+/venv
 venv/
+venv/*
+bin/
+bin/*
+lib/
+lib/*
+include/
+include/*
+pyvenv.cfg
+
 
 # local env files
 .env*.local
