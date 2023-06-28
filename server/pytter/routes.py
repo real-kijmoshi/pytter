@@ -1,7 +1,7 @@
 from pytter import app, db, bcrypt
 from flask import request
 from flask_cors import cross_origin
-from models import User, Tweet, Like
+from pytter.models import User, Tweet, Like
 import re
 
 

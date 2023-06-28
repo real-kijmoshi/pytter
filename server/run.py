@@ -1,4 +1,5 @@
 from pytter import app
+import pytter.routes
 
 
 if __name__ == "__main__":
