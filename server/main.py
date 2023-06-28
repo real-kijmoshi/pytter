@@ -3,6 +3,11 @@ from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
 
+@app.route("/ping", methods=["GET"])
+@cross_origin(origin='http://localhost:3000')
+def ping():
+    return "Pong!"
+
 @app.route("/whoami", methods=["POST"])
 @cross_origin(origin='http://localhost:3000',headers=['Authorization'])
 def helloWorld():

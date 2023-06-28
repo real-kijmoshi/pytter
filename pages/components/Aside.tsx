@@ -1,7 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
+
+import config from "@/config.json";
+
+const SERVER_ADRESS = config.SERVER_ADRESS
+
+//const SERVER_ADRESS = "http:///127.0.0.1:5000";
 
 interface whioAmIaccount {
   username: string;
@@ -20,47 +26,57 @@ export default function Aside() {
     const token = localStorage.getItem("token");
 
 
-    console.log(token);
-
     if (token) {
-      axios.post("http://127.0.0.1:5000/whoami", {}, {
+      axios.post(SERVER_ADRESS + "/whoami", {}, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
       }).then((res) => {
-        console.log(res.data);
         setUserData(res.data);
-        
       }).catch((err) => {
         console.log(err);
+        if(err.response?.status != 200) {
+          axios.get(SERVER_ADRESS + "/ping", {},).then((res) => {
+            console.log(res)
+            if(res.data != "pong") {
+              alert("Server is down please try again later");
+            }
+          }).catch((err) => {
+            alert("Server is down please try again later or contact with server admin (kijmoshi.xyz discord: @kijmoshi or @mertane.)");
+          })
+        }
       })
       
     }
   }, []);
   return (
     <aside
-      className={`w-64 h-screen bg-white border border-[#e6e6e6] border-right`}
+      className={`w-32 sm:w-64 h-screen bg-white border border-[#e6e6e6] border-right `}
     >
-      {userData ? (
+      {userData && (
         <div>
+
           <Image
             src={userData.avatar}
             width={64}
             height={64}
             alt={userData.username}
-            className={`rounded-full`}
+            className={`rounded-full sm:m-2 mx-auto`}
           />
         </div>
-      ) : (
+      )}
+      {!userData && (
         <div className={`flex flex-col items-center justify-center h-screen`}>
           <Link
             href="/login"
             className={`border border-black rounded-lg p-2 px-10`}
           >
             Login
+
           </Link>
         </div>
       )}
+
     </aside>
   );
 }
