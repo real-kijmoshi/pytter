@@ -1,4 +1,4 @@
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import axios from "axios";
 import { useEffect, useState } from "react"
@@ -56,7 +56,7 @@ export default function Aside() {
       {userData && (
         <div>
 
-          <Image
+          <img
             src={userData.avatar}
             width={64}
             height={64}
