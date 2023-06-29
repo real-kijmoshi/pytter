@@ -24,9 +24,8 @@ export default function Aside() {
 
     if (token) {
       axios
-        .post(
+        .get(
           SERVER_ADRESS + "/whoami",
-          {},
           {
             headers: {
               Authorization: `Bearer ${token}`,
