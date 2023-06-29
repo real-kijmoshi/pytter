@@ -27,8 +27,14 @@ def register():
         return {"message": "Password must be between 5 and 20 characters long"}, 400
     if not re.match(EMAIL_REGEX, data["email"]):
         return {"message": "Invalid email"}, 400
+    if User.query.filter_by(username=data["username"]).first():
+        return {"message": "Username already taken"}, 400
+    if User.query.filter_by(email=data["email"]).first():
+        return {"message": "Email already taken"}, 400
     
     hashed_password = bcrypt.generate_password_hash(data["password"]).decode("utf-8")
     user = User(username=data["username"], email=data["email"], password_hash=hashed_password)
     db.session.add(user)
     db.session.commit()
+
+    return {"message": "User created successfully"}, 201
