@@ -1,12 +1,17 @@
 import axios from "axios";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/router";
+
+import { SERVER_ADRESS } from "@/config.json";
 
 export default function Register() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [password2, setPassword2] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+
+  const router = useRouter();
 
   const [error, setError] = useState<string>("");
 
@@ -17,22 +22,20 @@ export default function Register() {
     if (username.length > 20) return setError("username is too long (max 20)");
     if (password.length > 20) return setError("password is too long (max 20)");
 
+    console.log(password, password2)
     if (password === password2) {
       axios
         .post(
-          process.env.SERVER_ADRESS + "/register",
-          {},
+          SERVER_ADRESS + "/register",
           {
-            data: {
-              username,
-              password,
-            },
-          }
+            username,
+            password,
+            email,
+          },
         )
         .then((res) => {
           if (res.status === 200) {
-            setError("");
-            location.href = "/login";
+            router.push("/auth/login");
           } else {
             setError(res.data.error);
           }
@@ -89,8 +92,8 @@ export default function Register() {
 
           <p className={`mt-10 flex flex-row`}>
             if you have an account, please
-            <Link href="/auth/login">
-              <p className={`text-blue-300 ml-1`}>login</p>
+            <Link href="/auth/login" className={`text-blue-300 ml-1`}>
+              login
             </Link>
           </p>
 

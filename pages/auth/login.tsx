@@ -3,6 +3,8 @@ import axios from "axios";
 import { Roboto_Flex } from "next/font/google";
 import Link from "next/link";
 import { useState } from "react";
+import { useCookies } from "react-cookie";
+import { useRouter } from "next/router";
 
 const roboto = Roboto_Flex({ subsets: ["latin-ext"] });
 
@@ -11,6 +13,10 @@ export default function Login() {
   const [password, setPassword] = useState<string>("");
 
   const [error, setError] = useState<string>("");
+
+  const router = useRouter();
+
+  const [cookies, setCookie, removeCookie] = useCookies(["token"]);
 
   const handleLogin = () => {
     axios
@@ -26,9 +32,13 @@ export default function Login() {
       )
       .then((res) => {
         if (res.status === 200) {
-          localStorage.setItem("token", res.data.token);
-          setError("");
-          location.href = "/";
+          setCookie("token", res.data.token, {
+            path: "/",
+            maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+            sameSite: true,
+          });
+
+          router.push("/");
         } else {
           setError(res.data.error);
         }
