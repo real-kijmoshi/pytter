@@ -41,3 +41,15 @@ def register():
     db.session.commit()
     
     return {"message": "User created successfully"}, 201
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = dict(request.json)
+    user = User.query.filter_by(username=data["username"]).first()
+    if not user:
+        return {"message": "Invalid username or password"}, 400
+    if not bcrypt.check_password_hash(user.password_hash, data["password"]):
+        return {"message": "Invalid username or password"}, 400
+    
+    return {"message": "Login successful"}, 200
