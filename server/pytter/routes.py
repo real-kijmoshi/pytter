@@ -15,14 +15,16 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
-        if "token" in request.headers:
-            token = request.headers["token"]
+        data = dict(request.json)
+        if "token" in data.keys():
+            token = data["token"]
         if not token:
             return {"message": "Token is missing"}, 401
         try:
-            data = jwt.decode(token, app.config["SECRET_KEY"])
+            data = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
             current_user = User.query.filter_by(id=data["user_id"]).first()
-        except:
+        except Exception as e:
+            print(e)
             return {"message": "Token is invalid"}, 401
         return f(current_user, *args, **kwargs)
     return decorated
@@ -68,7 +70,7 @@ def register():
     return {"message": "User created successfully"}, 201
 
 
-@app.route("/login")
+@app.route("/login", methods=["POST"])
 def login():
     data = dict(request.json)
     if not "username" in data.keys() or not "password" in data.keys():
@@ -82,3 +84,9 @@ def login():
     token = jwt.encode({"user_id": user.id, "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)}, app.config["SECRET_KEY"])
     return {"token": token}, 200
 
+
+@app.route("/users")
+@token_required
+def get_users(current_user):
+    users = User.query.all()
+    return {"users": [{"username": user.username, "email": user.email} for user in users]}, 200
