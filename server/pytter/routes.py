@@ -68,7 +68,7 @@ def register():
     return {"message": "User created successfully"}, 201
 
 
-@app.route("/login")
+@app.route("/login", methods=["POST"])
 def login():
     data = dict(request.json)
     if not "username" in data.keys() or not "password" in data.keys():

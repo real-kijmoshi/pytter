@@ -8,6 +8,8 @@ import { useRouter } from "next/router";
 
 const roboto = Roboto_Flex({ subsets: ["latin-ext"] });
 
+import { SERVER_ADRESS } from "@/config.json"
+
 export default function Login() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -21,14 +23,11 @@ export default function Login() {
   const handleLogin = () => {
     axios
       .post(
-        process.env.SERVER_ADRESS + "/login",
-        {},
+        SERVER_ADRESS + "/login",
         {
-          data: {
-            username,
-            password,
-          },
-        }
+          username,
+          password,
+        },
       )
       .then((res) => {
         if (res.status === 200) {
@@ -45,6 +44,9 @@ export default function Login() {
       })
       .catch((err) => {
         console.log(err);
+        if (err.response.status === 400) {
+          setError(err.response.data.error);
+        }
       });
   };
 
@@ -79,8 +81,10 @@ export default function Login() {
         <div>
           <p className={`flex flex-row mt-10`}>
             if you don't have an account, please
-            <Link href="/auth/register">
-              <p className={`text-blue-300 ml-1`}>register</p>
+            <Link href="/auth/register"
+              className={`text-blue-500 hover:text-blue-700 ml-1`}
+            >
+              register
             </Link>
           </p>
 
