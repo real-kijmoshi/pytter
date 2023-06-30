@@ -13,7 +13,7 @@ class User(db.Model):
     account_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"User('{self.username}', '{self.email}', '{self.profile_picture}', '{self.account_created}')"
+        return f"User({self.id}, '{self.username}', '{self.email}', '{self.profile_picture}', '{self.account_created}')"
     
 
 class Tweet(db.Model):
