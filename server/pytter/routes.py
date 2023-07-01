@@ -36,11 +36,15 @@ def ping():
 
 
 @app.route("/whoami")
-def whoami():
+@token_required
+def whoami(current_user):
     return {
-        "username": "John Doe",
-        "display_name": "john.doe@email.com",
-        "avatar": "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50"
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "profile_picture": current_user.profile_picture,
+        "display_name": current_user.display_name,
+        "account_created": current_user.account_created
     }
 
 
