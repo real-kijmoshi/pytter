@@ -14,12 +14,10 @@ EMAIL_REGEX = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = None
-        data = dict(request.json)
-        if "token" in data.keys():
-            token = data["token"]
+        token = request.headers["Authorization"].split(" ")[1]
+
         if not token:
-            return {"message": "Token is missing"}, 401
+            return {"message": "Missing token"}, 401
         try:
             data = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
             current_user = User.query.filter_by(id=data["user_id"]).first()
