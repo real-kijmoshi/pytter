@@ -34,7 +34,7 @@ export default function Register() {
           },
         )
         .then((res) => {
-          if (res.status === 200) {
+          if (res.status === 201) {
             router.push("/auth/login");
           } else {
             setError(res.data.error);
@@ -42,7 +42,7 @@ export default function Register() {
         })
         .catch((err) => {
           if(err.response.status === 400) {
-            setError(err.response.data.error)
+            setError(err.response.data.message)
           }
         });
     } else {
