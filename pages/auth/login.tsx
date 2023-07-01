@@ -43,9 +43,10 @@ export default function Login() {
         }
       })
       .catch((err) => {
-        console.log(err);
-        if (err.response.status === 400) {
-          setError(err.response.data.error);
+        if (err.response?.status === 400) {
+          setError("Invalid username or password");
+        } else {
+          setError("Something went wrong");
         }
       });
   };
