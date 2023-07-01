@@ -7,6 +7,7 @@ class User(db.Model):
     username = db.Column(db.String(20), nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=False, unique=True)
     profile_picture = db.Column(db.String(40), nullable=False, default='default.jpg')
+    display_name = db.Column(db.String(20), nullable=True)
     password_hash = db.Column(db.String(128), nullable=False)
     tweets = db.relationship('Tweet', backref='author', lazy=True)
     likes = db.relationship('Like', backref='user', lazy=True)
