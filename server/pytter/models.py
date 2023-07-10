@@ -15,7 +15,7 @@ class User(db.Model):
 
     def __repr__(self):
         return f"User({self.id}, '{self.username}', '{self.email}', '{self.profile_picture}', '{self.account_created}')"
-    
+
 
 class Tweet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -35,4 +35,3 @@ class Like(db.Model):
 
     def __repr__(self):
         return f"Like('{self.user_id}', '{self.tweet_id}')"
-    
