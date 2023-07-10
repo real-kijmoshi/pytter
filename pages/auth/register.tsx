@@ -41,9 +41,7 @@ export default function Register() {
           }
         })
         .catch((err) => {
-          if(err.response.status === 400) {
-            setError(err.response.data.message)
-          }
+          setError(err.response.data.message)
         });
     } else {
       setError("passwords don't match");
