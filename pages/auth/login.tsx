@@ -14,6 +14,8 @@ export default function Login() {
   const router = useRouter();
   const [, setCookie] = useCookies(["token"]);
 
+  const THIRTY_DAYS_IN_SECONDS = 60 * 60 * 24 * 30;
+
   const handleLogin = async () => {
     if (!username || !password) {
       setError("Please fill in all fields");
@@ -26,7 +28,7 @@ export default function Login() {
       if (res.status === 200) {
         setCookie("token", res.data.token, {
           path: "/",
-          maxAge: 60 * 60 * 24 * 30,
+          maxAge: THIRTY_DAYS_IN_SECONDS,
           sameSite: "lax",
         });
         router.push("/");

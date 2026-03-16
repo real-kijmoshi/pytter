@@ -64,7 +64,7 @@ def login():
         return {"message": "Invalid username or password"}, 400
 
     token = jwt.encode(
-        {"user_id": user.id, "exp": datetime.datetime.utcnow() + datetime.timedelta(days=30)},
+        {"user_id": user.id, "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=30)},
         app.config["SECRET_KEY"]
     )
     return {"token": token}, 200
@@ -133,8 +133,13 @@ def tweets():
 
 @app.route("/feed", methods=["GET"])
 def feed():
-    page = int(request.args.get("page", 1))
-    per_page = int(request.args.get("per_page", 20))
+    try:
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 20))
+    except ValueError:
+        return {"message": "Invalid page or per_page parameter"}, 400
+    if page < 1 or per_page < 1 or per_page > 100:
+        return {"message": "Invalid page or per_page parameter"}, 400
     feed_tweets = Tweet.query.order_by(Tweet.date_posted.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

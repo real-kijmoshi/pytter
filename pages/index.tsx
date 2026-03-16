@@ -127,6 +127,8 @@ export default function Home({ user }: { user: UserExtended | null }) {
   const [loadingFeed, setLoadingFeed] = useState<boolean>(true);
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
   const charLimit = 300;
+  // Allow up to 10 chars over the limit so users can see they've exceeded it before submission is blocked
+  const charInputMax = charLimit + 10;
 
   const fetchFeed = async () => {
     try {
@@ -208,7 +210,7 @@ export default function Home({ user }: { user: UserExtended | null }) {
                 setPostContent(e.target.value);
                 setError("");
               }}
-              maxLength={charLimit + 10}
+              maxLength={charInputMax}
             />
             <div className="flex items-center justify-between mt-2">
               <span className={`text-sm ${postContent.length > charLimit ? "text-red-500" : "text-gray-400"}`}>
