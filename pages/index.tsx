@@ -33,15 +33,7 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(diff / 86400)}d`;
 }
 
-function SendIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-    </svg>
-  );
-}
-
-function HeartIcon({ filled, size = 16 }: { filled: boolean; size?: number }) {
+function HeartIcon({ filled, size = 17 }: { filled: boolean; size?: number }) {
   return filled ? (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
@@ -55,7 +47,7 @@ function HeartIcon({ filled, size = 16 }: { filled: boolean; size?: number }) {
 
 function SparkleIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" className="text-indigo-500/40">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" className="text-accent/30">
       <path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z" />
     </svg>
   );
@@ -67,6 +59,8 @@ export default function Home({ user }: { user: UserExtended | null }) {
   const [tweets, setTweets] = useState<TweetItem[]>([]);
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
   const [animatingId, setAnimatingId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"foryou" | "following">("foryou");
+  const [composerFocused, setComposerFocused] = useState(false);
 
   const remaining = 280 - postContent.length;
   const isWarning = remaining <= 20;
@@ -112,6 +106,7 @@ export default function Home({ user }: { user: UserExtended | null }) {
         if (res.status === 201) {
           setError("");
           setPostContent("");
+          setComposerFocused(false);
           loadFeed();
         } else {
           setError(res.data.message);
@@ -152,69 +147,106 @@ export default function Home({ user }: { user: UserExtended | null }) {
   };
 
   return (
-    <div className="flex-1 max-w-[600px] mx-auto py-4 px-3">
-      {/* Header */}
-      <div className="pb-3 mb-1">
-        <h1 className="text-lg font-bold text-white">Home</h1>
-      </div>
+    <div className="flex flex-col min-h-screen">
+      {/* Sticky header */}
+      <header className="sticky top-0 z-10 backdrop-blur-md bg-bg/80 border-b border-border">
+        <div className="flex">
+          <button
+            onClick={() => setActiveTab("foryou")}
+            className={`flex-1 py-4 text-sm font-semibold transition-all duration-200 relative ${
+              activeTab === "foryou" ? "text-text-primary" : "text-text-muted hover:text-text-secondary hover:bg-white/[0.03]"
+            }`}
+          >
+            For you
+            {activeTab === "foryou" && (
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] rounded-full bg-gradient-to-r from-accent to-accent-bright" />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("following")}
+            className={`flex-1 py-4 text-sm font-semibold transition-all duration-200 relative ${
+              activeTab === "following" ? "text-text-primary" : "text-text-muted hover:text-text-secondary hover:bg-white/[0.03]"
+            }`}
+          >
+            Following
+            {activeTab === "following" && (
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-[3px] rounded-full bg-gradient-to-r from-accent to-accent-bright" />
+            )}
+          </button>
+        </div>
+      </header>
 
-      {/* Composer */}
+      {/* Tweet Composer */}
       {user?.username && (
-        <div className="bg-[#13131a] border border-[#1f1f2e] rounded-2xl p-4 mb-1">
-          <div className="flex items-start space-x-3">
+        <div className={`border-b border-border px-4 pt-4 pb-3 transition-all duration-200 ${composerFocused ? "bg-white/[0.01]" : ""}`}>
+          <div className="flex gap-3">
             <img
               src={user.avatar}
               alt={user.username}
-              width={40}
-              height={40}
-              className="rounded-full shrink-0 ring-2 ring-white/10"
+              width={44}
+              height={44}
+              className="rounded-full shrink-0 ring-2 ring-border-highlight object-cover mt-0.5"
             />
             <div className="flex-1 min-w-0">
               <textarea
                 placeholder="What's on your mind?"
-                className="w-full bg-transparent outline-none text-slate-100 placeholder-slate-600 text-base leading-relaxed pt-1 min-h-[72px]"
-                rows={3}
+                className="w-full bg-transparent outline-none text-text-primary placeholder-text-muted text-[1.0625rem] leading-relaxed pt-2 min-h-[52px]"
+                rows={composerFocused ? 3 : 2}
                 value={postContent}
                 onChange={(e) => setPostContent(e.target.value)}
+                onFocus={() => setComposerFocused(true)}
                 maxLength={280}
               />
-              <div className="flex justify-between items-center mt-2 pt-2 border-t border-[#1f1f2e]">
-                <div className="flex items-center space-x-2">
-                  {/* Circular progress indicator */}
-                  <svg width="24" height="24" viewBox="0 0 24 24" className="-rotate-90">
-                    <circle
-                      cx="12" cy="12" r={PROGRESS_CIRCLE_RADIUS}
-                      fill="none"
-                      stroke="#1f1f2e"
-                      strokeWidth="2.5"
-                    />
-                    <circle
-                      cx="12" cy="12" r={PROGRESS_CIRCLE_RADIUS}
-                      fill="none"
-                      stroke={isDanger ? "#f43f5e" : isWarning ? "#f59e0b" : "#6366f1"}
-                      strokeWidth="2.5"
-                      strokeDasharray={circumference}
-                      strokeDashoffset={circumference * (1 - progress)}
-                      strokeLinecap="round"
-                      className="transition-all duration-100"
-                    />
-                  </svg>
-                  <span className={`text-xs font-medium ${isDanger ? "text-rose-400" : isWarning ? "text-amber-400" : "text-slate-600"}`}>
-                    {isWarning || isDanger ? remaining : ""}
-                  </span>
+
+              {/* Composer actions */}
+              <div className={`flex items-center justify-between pt-3 border-t border-border mt-2 transition-all duration-200 ${!composerFocused && !postContent ? "opacity-60" : "opacity-100"}`}>
+                <div className="flex items-center gap-1.5">
+                  {/* Progress ring */}
+                  <div className="relative w-7 h-7">
+                    <svg width="28" height="28" viewBox="0 0 28 28" className="-rotate-90">
+                      <circle cx="14" cy="14" r={PROGRESS_CIRCLE_RADIUS} fill="none" stroke="#1e1e2e" strokeWidth="2.5" />
+                      <circle
+                        cx="14" cy="14" r={PROGRESS_CIRCLE_RADIUS}
+                        fill="none"
+                        stroke={isDanger ? "#f43f5e" : isWarning ? "#f59e0b" : "#7c3aed"}
+                        strokeWidth="2.5"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={circumference * (1 - progress)}
+                        strokeLinecap="round"
+                        className="transition-all duration-100"
+                      />
+                    </svg>
+                    {isWarning && (
+                      <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold" style={{ color: isDanger ? "#f43f5e" : "#f59e0b" }}>
+                        {remaining}
+                      </span>
+                    )}
+                  </div>
+                  <div className="w-px h-5 bg-border" />
                 </div>
-                <button
-                  className="flex items-center space-x-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-full px-4 py-1.5 text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
-                  onClick={handlePost}
-                  disabled={postContent.trim().length === 0 || isDanger}
-                >
-                  <SendIcon />
-                  <span>Post</span>
-                </button>
+
+                <div className="flex items-center gap-2">
+                  {postContent && (
+                    <button
+                      className="text-xs text-text-muted hover:text-text-secondary transition-colors px-2"
+                      onClick={() => { setPostContent(""); setError(""); }}
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <button
+                    className="flex items-center gap-1.5 bg-gradient-to-r from-accent to-accent-bright hover:opacity-90 text-white font-semibold rounded-full px-5 py-2 text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 shadow-button"
+                    onClick={handlePost}
+                    disabled={postContent.trim().length === 0 || isDanger}
+                  >
+                    Post
+                  </button>
+                </div>
               </div>
+
               {error && (
-                <p className="text-rose-400 text-xs mt-2 flex items-center space-x-1">
-                  <span>⚠</span>
+                <p className="text-rose-400 text-xs mt-2 flex items-center gap-1.5 bg-rose-500/10 rounded-lg px-3 py-2">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
                   <span>{error}</span>
                 </p>
               )}
@@ -223,58 +255,69 @@ export default function Home({ user }: { user: UserExtended | null }) {
         </div>
       )}
 
-      {/* Divider */}
-      <div className="border-t border-[#1f1f2e] mb-1" />
-
       {/* Empty state */}
       {tweets.length === 0 && (
-        <div className="text-center py-20 animate-fade-in">
-          <div className="flex justify-center mb-4">
+        <div className="flex flex-col items-center justify-center py-24 animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-4 animate-float">
             <SparkleIcon />
           </div>
-          <p className="text-lg font-semibold text-white mb-1">Nothing here yet</p>
-          <p className="text-sm text-slate-500">Be the first to share something!</p>
+          <p className="text-lg font-bold text-text-primary mb-1.5">Nothing here yet</p>
+          <p className="text-sm text-text-muted max-w-[240px] text-center leading-relaxed">
+            Be the first to share something with the world!
+          </p>
         </div>
       )}
 
       {/* Feed */}
       <div>
-        {tweets.map((tweet) => (
+        {tweets.map((tweet, idx) => (
           <article
             key={tweet.id}
-            className="border-b border-[#1f1f2e] px-4 py-4 hover:bg-white/[0.02] transition-colors duration-150 cursor-default"
+            className="border-b border-border px-4 py-4 hover:bg-white/[0.02] transition-colors duration-150 animate-fade-in"
+            style={{ animationDelay: `${idx * 30}ms`, animationFillMode: "both" }}
           >
-            <div className="flex space-x-3">
-              <img
-                src={tweet.author.avatar}
-                alt={tweet.author.username}
-                width={42}
-                height={42}
-                className="rounded-full shrink-0 ring-2 ring-white/5"
-              />
+            <div className="flex gap-3">
+              <div className="shrink-0">
+                <img
+                  src={tweet.author.avatar}
+                  alt={tweet.author.username}
+                  width={44}
+                  height={44}
+                  className="rounded-full ring-2 ring-border-highlight hover:ring-accent/30 transition-all duration-200 object-cover cursor-pointer"
+                />
+              </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-1.5 flex-wrap mb-0.5">
-                  <span className="font-semibold text-sm text-white">{tweet.author.display_name}</span>
-                  <span className="text-slate-600 text-sm">@{tweet.author.username}</span>
-                  <span className="text-slate-700 text-xs">·</span>
-                  <span className="text-slate-600 text-xs">{timeAgo(tweet.date_posted)}</span>
+                {/* Author line */}
+                <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                  <span className="font-bold text-sm text-text-primary hover:underline cursor-pointer">
+                    {tweet.author.display_name}
+                  </span>
+                  <span className="text-text-muted text-sm">@{tweet.author.username}</span>
+                  <span className="text-border-highlight text-xs">·</span>
+                  <span className="text-text-muted text-xs">{timeAgo(tweet.date_posted)}</span>
                 </div>
-                <p className="text-slate-300 text-sm leading-relaxed break-words">{tweet.content}</p>
-                <div className="flex items-center mt-3 -ml-1">
+
+                {/* Content */}
+                <p className="text-text-secondary text-[0.9375rem] leading-relaxed break-words mt-0.5">
+                  {tweet.content}
+                </p>
+
+                {/* Actions */}
+                <div className="flex items-center gap-4 mt-3 -ml-1.5">
                   <button
-                    className={`flex items-center space-x-1.5 text-xs rounded-full px-2 py-1 transition-all duration-200 group ${
+                    className={`flex items-center gap-1.5 text-sm rounded-full px-2 py-1.5 transition-all duration-200 group ${
                       likedIds.has(tweet.id)
-                        ? "text-pink-500"
-                        : "text-slate-600 hover:text-pink-500 hover:bg-pink-500/10"
+                        ? "text-pink"
+                        : "text-text-muted hover:text-pink hover:bg-pink/10"
                     } ${!user ? "cursor-default" : "cursor-pointer"}`}
                     onClick={() => handleLike(tweet.id)}
                     disabled={!user}
                     aria-label="Like"
                   >
-                    <span className={animatingId === tweet.id ? "animate-heart-pop" : ""}>
-                      <HeartIcon filled={likedIds.has(tweet.id)} size={15} />
+                    <span className={`transition-transform ${animatingId === tweet.id ? "animate-heart-pop" : ""}`}>
+                      <HeartIcon filled={likedIds.has(tweet.id)} size={16} />
                     </span>
-                    <span className="font-medium">
+                    <span className="text-xs font-medium tabular-nums">
                       {tweet.like_count + (likedIds.has(tweet.id) ? 1 : 0)}
                     </span>
                   </button>
@@ -284,6 +327,9 @@ export default function Home({ user }: { user: UserExtended | null }) {
           </article>
         ))}
       </div>
+
+      {/* Bottom spacer */}
+      {tweets.length > 0 && <div className="h-16" />}
     </div>
   );
 }

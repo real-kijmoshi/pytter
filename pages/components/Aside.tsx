@@ -15,31 +15,43 @@ interface User {
   avatar: string;
 }
 
-function HomeIcon({ size = 20 }: { size?: number }) {
-  return (
+function HomeIcon({ size = 22, filled = false }: { size?: number; filled?: boolean }) {
+  return filled ? (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
       <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
     </svg>
+  ) : (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
   );
 }
 
-function UserIcon({ size = 20 }: { size?: number }) {
+function UserCircleIcon({ size = 22, filled = false }: { size?: number; filled?: boolean }) {
+  return filled ? (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 4a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 13.5a7.5 7.5 0 0 1-6-3c.053-2 4-3.1 6-3.1s5.947 1.1 6 3.1a7.5 7.5 0 0 1-6 3z" />
+    </svg>
+  ) : (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function MoreHorizIcon({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+      <circle cx="5" cy="12" r="2" />
+      <circle cx="12" cy="12" r="2" />
+      <circle cx="19" cy="12" r="2" />
     </svg>
   );
 }
 
-function ChevronUpIcon({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="18 15 12 9 6 15" />
-    </svg>
-  );
-}
-
-function LogOutIcon({ size = 15 }: { size?: number }) {
+function LogOutIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -49,9 +61,31 @@ function LogOutIcon({ size = 15 }: { size?: number }) {
   );
 }
 
+function PytterLogo({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <path
+        d="M16 4C9.373 4 4 9.373 4 16s5.373 12 12 12 12-5.373 12-12S22.627 4 16 4z"
+        fill="url(#logoGrad)"
+      />
+      <path
+        d="M10 13h5l-2 3h4l-5 7 1-5h-3l2-5z"
+        fill="white"
+        fillOpacity="0.95"
+      />
+      <defs>
+        <linearGradient id="logoGrad" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#7c3aed" />
+          <stop offset="1" stopColor="#ec4899" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 export default function Aside() {
   const [userData, setUserData] = useState<User | undefined>();
-  const [visible, setVisible] = useState<boolean>(false);
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const router = useRouter();
 
   const [cookies, , removeCookie] = useCookies(["token"]);
@@ -80,92 +114,121 @@ export default function Aside() {
   const isActive = (path: string) => router.pathname === path;
 
   return (
-    <aside className="w-16 sm:w-64 min-h-screen bg-[#0d0d14] border-r border-[#1f1f2e] flex flex-col justify-between py-4 px-2 sm:px-4 shrink-0">
-      {/* Top: Logo + Nav */}
-      <div>
+    <aside className="w-[68px] xl:w-[260px] min-h-screen bg-bg border-r border-border flex flex-col justify-between py-3 shrink-0 sticky top-0 self-start h-screen overflow-y-auto">
+      {/* Top section */}
+      <div className="flex flex-col px-2 xl:px-4">
         {/* Logo */}
-        <div className="mb-8 flex items-center sm:justify-start justify-center px-1 sm:px-2">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-glow-indigo shrink-0">
-            <span className="text-white font-bold text-base leading-none select-none">P</span>
+        <Link href="/" className="flex items-center gap-3 p-3 mb-1 rounded-2xl hover:bg-white/[0.05] transition-colors group w-fit xl:w-auto">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-glow-violet group-hover:shadow-glow-violet transition-shadow duration-300">
+            <PytterLogo size={28} />
           </div>
-          <span className="hidden sm:block ml-3 text-xl font-bold text-white tracking-tight">
+          <span className="hidden xl:block text-xl font-bold text-text-primary tracking-tight">
             Pytter
           </span>
-        </div>
+        </Link>
 
-        {/* Nav links */}
-        {userData && (
-          <nav className="flex flex-col space-y-1">
-            <Link
-              href="/"
-              className={`flex items-center space-x-3 p-2.5 sm:px-4 rounded-full transition-all duration-200 font-medium ${
-                isActive("/")
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:bg-white/5 hover:text-white"
-              }`}
-            >
-              <span className={`${isActive("/") ? "text-indigo-400" : ""}`}>
-                <HomeIcon size={20} />
-              </span>
-              <span className="hidden sm:inline text-sm">Home</span>
-            </Link>
+        {/* Navigation */}
+        <nav className="flex flex-col gap-0.5 mt-2">
+          <Link
+            href="/"
+            className={`flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-200 font-medium text-[0.9375rem] group ${
+              isActive("/")
+                ? "text-text-primary font-semibold"
+                : "text-text-secondary hover:text-text-primary hover:bg-white/[0.06]"
+            }`}
+          >
+            <span className={`transition-all duration-200 ${isActive("/") ? "text-accent" : "group-hover:scale-110"}`}>
+              <HomeIcon size={22} filled={isActive("/")} />
+            </span>
+            <span className="hidden xl:inline">Home</span>
+          </Link>
+
+          {userData && (
             <Link
               href={`/user/${userData.username}`}
-              className={`flex items-center space-x-3 p-2.5 sm:px-4 rounded-full transition-all duration-200 font-medium ${
+              className={`flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-200 font-medium text-[0.9375rem] group ${
                 isActive(`/user/${userData.username}`)
-                  ? "bg-white/10 text-white"
-                  : "text-slate-400 hover:bg-white/5 hover:text-white"
+                  ? "text-text-primary font-semibold"
+                  : "text-text-secondary hover:text-text-primary hover:bg-white/[0.06]"
               }`}
             >
-              <UserIcon size={20} />
-              <span className="hidden sm:inline text-sm">Profile</span>
+              <span className={`transition-all duration-200 ${isActive(`/user/${userData.username}`) ? "text-accent" : "group-hover:scale-110"}`}>
+                <UserCircleIcon size={22} filled={isActive(`/user/${userData.username}`)} />
+              </span>
+              <span className="hidden xl:inline">Profile</span>
             </Link>
-          </nav>
+          )}
+        </nav>
+
+        {/* Post button */}
+        {userData && (
+          <div className="mt-4">
+            <Link
+              href="/"
+              className="xl:flex hidden items-center justify-center w-full py-3 rounded-full font-semibold text-sm text-white bg-gradient-to-r from-accent to-accent-bright hover:opacity-90 transition-all duration-200 active:scale-95 shadow-button hover:shadow-button-hover"
+            >
+              Post
+            </Link>
+            <Link
+              href="/"
+              className="xl:hidden flex items-center justify-center w-10 h-10 rounded-full font-semibold text-white bg-gradient-to-r from-accent to-accent-bright hover:opacity-90 transition-all shadow-button mx-auto"
+              title="Post"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </Link>
+          </div>
         )}
       </div>
 
       {/* Bottom: User section */}
-      <div>
+      <div className="px-2 xl:px-4 mt-4">
         {userData ? (
           <div className="relative">
             <button
-              className="flex items-center space-x-2 w-full p-2 sm:p-2.5 rounded-2xl hover:bg-white/5 transition-all duration-200 group"
-              onClick={() => setVisible(!visible)}
+              className="flex items-center gap-2.5 w-full p-2.5 rounded-2xl hover:bg-white/[0.06] transition-all duration-200 group"
+              onClick={() => setMenuOpen(!menuOpen)}
             >
               <img
                 src={userData.avatar}
-                width={36}
-                height={36}
+                width={38}
+                height={38}
                 alt={userData.username}
-                className="rounded-full shrink-0 ring-2 ring-white/10 group-hover:ring-indigo-500/40 transition-all duration-200"
+                className="rounded-full shrink-0 ring-2 ring-border-highlight group-hover:ring-accent/40 transition-all duration-200 object-cover"
               />
-              <div className="hidden sm:flex flex-col text-left min-w-0 flex-1">
-                <span className="font-semibold text-sm text-white truncate">{userData.display_name}</span>
-                <span className="text-slate-500 text-xs truncate">@{userData.username}</span>
+              <div className="hidden xl:flex flex-col text-left min-w-0 flex-1">
+                <span className="font-semibold text-sm text-text-primary truncate leading-tight">{userData.display_name}</span>
+                <span className="text-text-muted text-xs truncate leading-tight">@{userData.username}</span>
               </div>
-              <span className={`hidden sm:block text-slate-500 transition-transform duration-200 ${visible ? "rotate-180" : ""}`}>
-                <ChevronUpIcon />
+              <span className="hidden xl:block text-text-muted group-hover:text-text-secondary transition-colors ml-auto">
+                <MoreHorizIcon />
               </span>
             </button>
 
-            {visible && (
-              <div className="absolute bottom-full left-0 mb-2 w-52 bg-[#1a1a28] border border-[#2d2d42] rounded-2xl shadow-dropdown overflow-hidden z-50 animate-slide-up">
+            {menuOpen && (
+              <div className="absolute bottom-full left-0 mb-2 w-56 bg-surface-overlay border border-border-highlight rounded-2xl shadow-dropdown overflow-hidden z-50 animate-scale-in">
+                <div className="px-4 py-3 border-b border-border">
+                  <p className="font-semibold text-sm text-text-primary truncate">{userData.display_name}</p>
+                  <p className="text-xs text-text-muted truncate">@{userData.username}</p>
+                </div>
                 <Link
                   href={`/user/${userData.username}`}
-                  className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors font-medium"
-                  onClick={() => setVisible(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-text-secondary hover:bg-white/[0.05] hover:text-text-primary transition-colors font-medium"
+                  onClick={() => setMenuOpen(false)}
                 >
-                  <UserIcon size={15} />
+                  <UserCircleIcon size={16} />
                   <span>View profile</span>
                 </Link>
-                <div className="border-t border-[#1f1f2e]" />
+                <div className="border-t border-border" />
                 <button
                   onClick={() => {
                     removeCookie("token");
                     setUserData(undefined);
-                    setVisible(false);
+                    setMenuOpen(false);
                   }}
-                  className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-rose-400 hover:bg-rose-500/10 transition-colors font-medium"
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-rose-400 hover:bg-rose-500/10 transition-colors font-medium"
                 >
                   <LogOutIcon />
                   <span>Log out</span>
@@ -174,17 +237,17 @@ export default function Aside() {
             )}
           </div>
         ) : (
-          <div className="flex flex-col space-y-2">
+          <div className="flex flex-col gap-2">
             <Link
               href="/auth/login"
-              className="block text-center bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-full py-2.5 text-sm transition-all duration-200 active:scale-95"
+              className="flex items-center justify-center py-2.5 rounded-full font-semibold text-sm text-white bg-gradient-to-r from-accent to-accent-bright hover:opacity-90 transition-all duration-200 active:scale-95 shadow-button"
             >
-              <span className="hidden sm:inline">Log in</span>
-              <span className="sm:hidden">→</span>
+              <span className="hidden xl:inline">Log in</span>
+              <span className="xl:hidden text-base">→</span>
             </Link>
             <Link
               href="/auth/register"
-              className="hidden sm:block text-center border border-[#2d2d42] text-slate-300 hover:border-indigo-500/50 hover:text-white hover:bg-white/5 font-medium rounded-full py-2.5 text-sm transition-all duration-200 active:scale-95"
+              className="hidden xl:flex items-center justify-center py-2.5 rounded-full border border-border-highlight text-text-secondary hover:border-accent/40 hover:text-text-primary hover:bg-white/[0.04] font-medium text-sm transition-all duration-200 active:scale-95"
             >
               Register
             </Link>
