@@ -1,3 +1,81 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --color-surface: #13131a;
+    --color-surface-raised: #1a1a24;
+    --color-surface-overlay: #0a0a0f;
+    --color-border: #1f1f2e;
+    --color-accent: #6366f1;
+    --color-accent-hover: #4f46e5;
+  }
+
+  html {
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background-color: #0a0a0f;
+    color: #f1f5f9;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #0a0a0f;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2d2d42;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3d3d5c;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2d2d42 transparent;
+  }
+
+  /* Remove default textarea resize handle */
+  textarea {
+    resize: none;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent hover:bg-accent-hover text-white font-semibold rounded-full px-5 py-2 text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95;
+  }
+
+  .btn-outline {
+    @apply border border-accent text-accent hover:bg-accent/10 font-semibold rounded-full px-5 py-2 text-sm transition-all duration-200 active:scale-95;
+  }
+
+  .input-field {
+    @apply bg-surface-raised border border-border rounded-xl px-4 py-3 w-full text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-accent/60 focus:border-accent/60 transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-surface border border-border rounded-2xl shadow-card;
+  }
+
+  .card-hover {
+    @apply hover:bg-surface-raised hover:shadow-card-hover hover:border-border-highlight transition-all duration-200;
+  }
+
+  .nav-link {
+    @apply flex items-center space-x-3 p-2.5 sm:px-4 rounded-full hover:bg-white/5 transition-all duration-200 font-medium text-slate-300 hover:text-white;
+  }
+
+  .nav-link-active {
+    @apply text-white font-semibold;
+  }
+}
