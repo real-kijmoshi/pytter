@@ -5,18 +5,16 @@ import { useRouter } from "next/router";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
+
   if (router.pathname.startsWith("/auth")) {
-    return (
-      <div>
-        <Component {...pageProps} />
-      </div>
-    );
+    return <Component {...pageProps} />;
   }
 
   return (
-    <div className={`flex flex-row`}>
+    <div className="flex flex-row min-h-screen max-w-6xl mx-auto">
       <Aside />
       <Component {...pageProps} />
     </div>
   );
 }
+
