@@ -2,28 +2,36 @@ from pytter import app, db, bcrypt
 from flask import request
 from flask_cors import CORS
 from pytter.models import User, Tweet, Like
+from sqlalchemy.orm import joinedload
 from functools import wraps
 import datetime
 import jwt
 import re
 
 
-EMAIL_REGEX = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+EMAIL_REGEX = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+
+
+def get_avatar_url(username):
+    return f"https://ui-avatars.com/api/?name={username}&background=1d9bf0&color=fff&size=64"
+
 
 ### AUTHENTICATION ###
 
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.headers["Authorization"].split(" ")[1]
-
+        auth_header = request.headers.get("Authorization", "")
+        parts = auth_header.split(" ")
+        if len(parts) != 2 or parts[0] != "Bearer":
+            return {"message": "Missing token"}, 401
+        token = parts[1]
         if not token:
             return {"message": "Missing token"}, 401
         try:
             data = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
             current_user = User.query.filter_by(id=data["user_id"]).first()
         except Exception as e:
-            print(e)
             return {"message": "Token is invalid"}, 401
         return f(current_user, *args, **kwargs)
     return decorated
@@ -44,14 +52,12 @@ def register():
         return {"message": "Username already taken"}, 400
     if User.query.filter_by(email=data["email"]).first():
         return {"message": "Email already taken"}, 400
-    
+
     hashed_password = bcrypt.generate_password_hash(data["password"]).decode("utf-8")
     user = User(username=data["username"], email=data["email"], password_hash=hashed_password)
     db.session.add(user)
     db.session.commit()
 
-    print(f"registered \"{data['username']}\" | \"{data['email']}\", password: \"{data['password']}\"")
-    
     return {"message": "User created successfully"}, 201
 
 
@@ -65,7 +71,7 @@ def login():
         return {"message": "Invalid username or password"}, 400
     if not bcrypt.check_password_hash(user.password_hash, data["password"]):
         return {"message": "Invalid username or password"}, 400
-    
+
     token = jwt.encode({"user_id": user.id, "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=6)}, app.config["SECRET_KEY"])
     return {"token": token}, 200
 
@@ -84,9 +90,9 @@ def whoami(current_user):
         "id": current_user.id,
         "username": current_user.username,
         "email": current_user.email,
-        "profile_picture": current_user.profile_picture,
-        "display_name": current_user.display_name,
-        "account_created": current_user.account_created
+        "avatar": get_avatar_url(current_user.username),
+        "display_name": current_user.display_name or current_user.username,
+        "account_created": current_user.account_created.isoformat() if current_user.account_created else None
     }
 
 
@@ -98,23 +104,41 @@ def tweet(current_user):
     data = dict(request.json)
     if not "content" in data.keys():
         return {"message": "Missing data"}, 400
-    if len(data["content"]) < 1 or len(data["content"]) > 300:
-        return {"message": "Tweet must be between 1 and 300 characters long"}, 400
-    tweet = Tweet(content=data["content"], user_id=current_user.id)
-    db.session.add(tweet)
+    if len(data["content"]) < 1 or len(data["content"]) > 280:
+        return {"message": "Tweet must be between 1 and 280 characters long"}, 400
+    new_tweet = Tweet(content=data["content"], user_id=current_user.id)
+    db.session.add(new_tweet)
     db.session.commit()
     return {"message": "Tweet sent successfully"}, 201
 
 
 @app.route("/tweets", methods=["GET"])
 def tweets():
-    data = dict(request.json)
-    if not "user_id" in data.keys():
-        return {"message": "Missing data"}, 400
-    tweets = Tweet.query.filter_by(user_id=data["user_id"]).all()
-    if not tweets:
-        return {"message": "No tweets found"}, 400
-    return {"tweets": [{"id": tweet.id, "content": tweet.content, "user_id": tweet.user_id, "created": tweet.created} for tweet in tweets]}, 200
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return {"message": "Missing user_id"}, 400
+    user_tweets = Tweet.query.filter_by(user_id=user_id).order_by(Tweet.date_posted.desc()).all()
+    return {"tweets": [{"id": t.id, "content": t.content, "user_id": t.user_id, "date_posted": t.date_posted.isoformat()} for t in user_tweets]}, 200
+
+
+@app.route("/feed", methods=["GET"])
+def feed():
+    feed_tweets = Tweet.query.options(joinedload(Tweet.author)).order_by(Tweet.date_posted.desc()).limit(50).all()
+    result = []
+    for t in feed_tweets:
+        author = t.author
+        result.append({
+            "id": t.id,
+            "content": t.content,
+            "date_posted": t.date_posted.isoformat(),
+            "like_count": len(t.likes),
+            "author": {
+                "username": author.username,
+                "display_name": author.display_name or author.username,
+                "avatar": get_avatar_url(author.username),
+            },
+        })
+    return {"tweets": result}, 200
 
 
 ### LIKES ###
@@ -128,23 +152,21 @@ def like(current_user):
     tweet = Tweet.query.filter_by(id=data["tweet_id"]).first()
     if not tweet:
         return {"message": "Invalid tweet id"}, 400
-    like = Like.query.filter_by(user_id=current_user.id, tweet_id=data["tweet_id"]).first()
-    if like:
-        db.session.delete(like)
+    existing_like = Like.query.filter_by(user_id=current_user.id, tweet_id=data["tweet_id"]).first()
+    if existing_like:
+        db.session.delete(existing_like)
         db.session.commit()
         return {"message": "Tweet unliked successfully"}, 200
-    like = Like(user_id=current_user.id, tweet_id=data["tweet_id"])
-    db.session.add(like)
+    new_like = Like(user_id=current_user.id, tweet_id=data["tweet_id"])
+    db.session.add(new_like)
     db.session.commit()
     return {"message": "Tweet liked successfully"}, 201
-    
+
 
 @app.route("/likes", methods=["GET"])
 def likes():
-    data = dict(request.json)
-    if not "user_id" in data.keys():
-        return {"message": "Missing data"}, 400
-    likes = Like.query.filter_by(user_id=data["user_id"]).all()
-    if not likes:
-        return {"message": "No likes found"}, 400
-    return {"likes": [{"id": like.id, "user_id": like.user_id, "tweet_id": like.tweet_id} for like in likes]}, 200
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return {"message": "Missing user_id"}, 400
+    user_likes = Like.query.filter_by(user_id=user_id).all()
+    return {"likes": [{"id": l.id, "user_id": l.user_id, "tweet_id": l.tweet_id} for l in user_likes]}, 200
