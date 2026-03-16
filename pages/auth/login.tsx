@@ -1,12 +1,8 @@
-/* eslint-disable react/no-unescaped-entities */
 import axios from "axios";
-import { Roboto_Flex } from "next/font/google";
 import Link from "next/link";
 import { useState } from "react";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
-
-const roboto = Roboto_Flex({ subsets: ["latin-ext"] });
 
 import { SERVER_ADRESS } from "@/config.json"
 
@@ -18,7 +14,7 @@ export default function Login() {
 
   const router = useRouter();
 
-  const [cookies, setCookie, removeCookie] = useCookies(["token"]);
+  const [, setCookie] = useCookies(["token"]);
 
   const handleLogin = () => {
     axios
@@ -33,64 +29,59 @@ export default function Login() {
         if (res.status === 200) {
           setCookie("token", res.data.token, {
             path: "/",
-            maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+            maxAge: 60 * 60 * 24 * 30, // 30 days
             sameSite: true,
           });
 
           router.push("/");
         } else {
-          setError(res.data.error);
+          setError(res.data.message);
         }
       })
       .catch((err) => {
         if (err.response?.status === 400) {
-          setError("Invalid username or password");
+          setError("Invalid username or password.");
         } else {
-          setError("Something went wrong");
+          setError("Something went wrong.");
         }
       });
   };
 
   return (
-    <div className={`flex flex-col items-center w-screen`}>
-      <div
-        className={`flex flex-col justify-bettwen space-y-2xl rounded shadow-lg border border-[#e6e6e6] text-center px-10 py-3 mt-10`}
-      >
-        <h1 className={`text-4xl ${roboto.className}`}>Login</h1>
-        <div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-10 py-8 w-full max-w-sm">
+        <h1 className="text-3xl font-bold text-center text-gray-900 mb-6">Sign in</h1>
+        <div className="flex flex-col space-y-3">
           <input
             type="text"
-            placeholder="username"
-            className={`border border-black rounded p-1 mt-5`}
+            placeholder="Username"
+            className="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
             onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
           />
-          <br />
           <input
             type="password"
-            placeholder="password"
-            className={`border border-black rounded p-1 mt-2`}
+            placeholder="Password"
+            className="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
           />
-          <br />
           <button
-            className={`border border-black rounded p-2 px-2 px-6 mt-2 hover:bg-black hover:text-white`}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full py-2.5 mt-2 transition-colors"
             onClick={handleLogin}
           >
-            Login
+            Log in
           </button>
         </div>
-        <div>
-          <p className={`flex flex-row mt-10`}>
-            if you don't have an account, please
-            <Link href="/auth/register"
-              className={`text-blue-500 hover:text-blue-700 ml-1`}
-            >
-              register
-            </Link>
-          </p>
 
-          {error && <p className={`text-red-500`}>{error}</p>}
-        </div>
+        {error && <p className="text-red-500 text-sm mt-3 text-center">{error}</p>}
+
+        <p className="text-center text-gray-500 text-sm mt-5">
+          {"Don't have an account? "}
+          <Link href="/auth/register" className="text-blue-500 hover:text-blue-700 font-medium">
+            Register
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -16,89 +16,80 @@ export default function Register() {
   const [error, setError] = useState<string>("");
 
   const handleRegister = () => {
-    if (username.length < 3) return setError("username is too short(min 3)");
-    if (password.length < 5) return setError("password is too short(min 5)");
+    if (username.length < 3) return setError("Username is too short (min 3).");
+    if (password.length < 5) return setError("Password is too short (min 5).");
 
-    if (username.length > 20) return setError("username is too long (max 20)");
-    if (password.length > 20) return setError("password is too long (max 20)");
+    if (username.length > 20) return setError("Username is too long (max 20).");
+    if (password.length > 20) return setError("Password is too long (max 20).");
 
-    console.log(password, password2)
-    if (password === password2) {
-      axios
-        .post(
-          SERVER_ADRESS + "/register",
-          {
-            username,
-            password,
-            email,
-          },
-        )
-        .then((res) => {
-          if (res.status === 201) {
-            router.push("/auth/login");
-          } else {
-            setError(res.data.error);
-          }
-        })
-        .catch((err) => {
-          setError(err.response.data.message)
-        });
-    } else {
-      setError("passwords don't match");
-    }
+    if (password !== password2) return setError("Passwords don't match.");
+
+    axios
+      .post(
+        SERVER_ADRESS + "/register",
+        {
+          username,
+          password,
+          email,
+        },
+      )
+      .then((res) => {
+        if (res.status === 201) {
+          router.push("/auth/login");
+        } else {
+          setError(res.data.message);
+        }
+      })
+      .catch((err) => {
+        setError(err.response?.data?.message || "Something went wrong.");
+      });
   };
 
   return (
-    <div className={`flex flex-col items-center w-screen`}>
-      <div
-        className={`flex flex-col justify-bettwen space-y-2xl rounded shadow-lg border border-[#e6e6e6] text-center px-10 py-3 mt-10`}
-      >
-        <h1 className={`text-4xl `}>Register</h1>
-        <div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-10 py-8 w-full max-w-sm">
+        <h1 className="text-3xl font-bold text-center text-gray-900 mb-6">Create account</h1>
+        <div className="flex flex-col space-y-3">
           <input
             type="text"
-            placeholder="username"
-            className={`border border-black rounded p-1 mt-5`}
+            placeholder="Username"
+            className="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
             onChange={(e) => setUsername(e.target.value)}
           />
-          <br />
-          <input
-            type="password"
-            placeholder="password"
-            className={`border border-black rounded p-1 mt-2`}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <br />
-          <input
-            type="password"
-            placeholder="password"
-            className={`border border-black rounded p-1 mt-2`}
-            onChange={(e) => setPassword2(e.target.value)}
-          />
-          <br />
           <input
             type="email"
-            placeholder="email"
-            className={`border border-black rounded p-1 mt-2`}
+            placeholder="Email"
+            className="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
             onChange={(e) => setEmail(e.target.value)}
           />
-          <br />
+          <input
+            type="password"
+            placeholder="Password"
+            className="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Confirm password"
+            className="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e) => setPassword2(e.target.value)}
+          />
           <button
-            className={`border border-black rounded p-2 px-2 px-6 mt-2 hover:bg-black hover:text-white`}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full py-2.5 mt-2 transition-colors"
             onClick={handleRegister}
           >
             Register
           </button>
-
-          <p className={`mt-10 flex flex-row`}>
-            if you have an account, please
-            <Link href="/auth/login" className={`text-blue-300 ml-1`}>
-              login
-            </Link>
-          </p>
-
-          {error && <p className={`text-red-500`}>{error}</p>}
         </div>
+
+        {error && <p className="text-red-500 text-sm mt-3 text-center">{error}</p>}
+
+        <p className="text-center text-gray-500 text-sm mt-5">
+          Already have an account?{" "}
+          <Link href="/auth/login" className="text-blue-500 hover:text-blue-700 font-medium">
+            Log in
+          </Link>
+        </p>
       </div>
     </div>
   );
