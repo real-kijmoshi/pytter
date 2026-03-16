@@ -49,3 +49,11 @@ pyvenv.cfg
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# package-lock (project uses pnpm)
+package-lock.json
