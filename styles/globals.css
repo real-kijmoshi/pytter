@@ -4,78 +4,123 @@
 
 @layer base {
   :root {
-    --color-surface: #13131a;
-    --color-surface-raised: #1a1a24;
-    --color-surface-overlay: #0a0a0f;
-    --color-border: #1f1f2e;
-    --color-accent: #6366f1;
-    --color-accent-hover: #4f46e5;
+    --color-bg: #050509;
+    --color-surface: #0e0e17;
+    --color-surface-raised: #141420;
+    --color-surface-overlay: #1a1a2a;
+    --color-border: #1e1e2e;
+    --color-border-highlight: #2a2a3e;
+    --color-accent: #7c3aed;
+    --color-accent-hover: #6d28d9;
+    --color-pink: #ec4899;
   }
 
   html {
     font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-    background-color: #0a0a0f;
+    background-color: var(--color-bg);
     color: #f1f5f9;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 
   body {
-    background-color: #0a0a0f;
+    background-color: var(--color-bg);
+    background-image: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(124,58,237,0.08), transparent);
+    min-height: 100vh;
   }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #2d2d42;
+    background: #2a2a3e;
     border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #3d3d5c;
+    background: #3a3a58;
   }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: #2d2d42 transparent;
+    scrollbar-color: #2a2a3e transparent;
   }
 
-  /* Remove default textarea resize handle */
   textarea {
     resize: none;
+  }
+
+  ::selection {
+    background: rgba(124, 58, 237, 0.3);
+    color: #f1f5f9;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-accent hover:bg-accent-hover text-white font-semibold rounded-full px-5 py-2 text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95;
+    @apply bg-gradient-to-r from-accent to-accent-bright hover:from-accent-hover hover:to-accent text-white font-semibold rounded-full px-5 py-2.5 text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 shadow-button hover:shadow-button-hover;
   }
 
   .btn-outline {
-    @apply border border-accent text-accent hover:bg-accent/10 font-semibold rounded-full px-5 py-2 text-sm transition-all duration-200 active:scale-95;
+    @apply border border-border-highlight text-text-secondary hover:text-text-primary hover:bg-white/5 hover:border-accent/40 font-medium rounded-full px-5 py-2.5 text-sm transition-all duration-200 active:scale-95;
   }
 
   .input-field {
-    @apply bg-surface-raised border border-border rounded-xl px-4 py-3 w-full text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-accent/60 focus:border-accent/60 transition-all duration-200;
+    @apply bg-surface-raised border border-border rounded-xl px-4 py-3 w-full text-text-primary placeholder-text-placeholder focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all duration-200 text-sm;
   }
 
   .card {
+    @apply bg-surface border border-border rounded-2xl;
+  }
+
+  .card-elevated {
     @apply bg-surface border border-border rounded-2xl shadow-card;
   }
 
   .card-hover {
-    @apply hover:bg-surface-raised hover:shadow-card-hover hover:border-border-highlight transition-all duration-200;
+    @apply hover:bg-surface-raised transition-all duration-200 cursor-pointer;
   }
 
   .nav-link {
-    @apply flex items-center space-x-3 p-2.5 sm:px-4 rounded-full hover:bg-white/5 transition-all duration-200 font-medium text-slate-300 hover:text-white;
+    @apply flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-200 font-medium text-text-secondary hover:text-text-primary hover:bg-white/[0.06] text-[0.9375rem];
   }
 
   .nav-link-active {
-    @apply text-white font-semibold;
+    @apply text-text-primary font-semibold bg-white/[0.08];
+  }
+
+  .avatar-ring {
+    @apply ring-2 ring-white/10;
+  }
+
+  .avatar-ring-accent {
+    @apply ring-2 ring-accent/40;
+  }
+
+  .divider {
+    @apply border-t border-border;
+  }
+
+  .badge {
+    @apply inline-flex items-center justify-center rounded-full text-xs font-semibold px-2.5 py-0.5;
+  }
+
+  /* Tweet card */
+  .tweet-card {
+    @apply border-b border-border px-4 py-4 hover:bg-white/[0.02] transition-colors duration-150;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply backdrop-blur-md bg-surface/80 border border-border;
+  }
+
+  /* Trending item */
+  .trending-item {
+    @apply px-4 py-3 hover:bg-white/[0.04] transition-colors duration-150 cursor-pointer;
   }
 }
