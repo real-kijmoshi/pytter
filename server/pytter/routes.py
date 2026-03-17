@@ -1,6 +1,5 @@
-from pytter import app, db, bcrypt
+from pytter import app, db, bcrypt, limiter
 from flask import request
-from flask_cors import CORS
 from pytter.models import User, Tweet, Like
 from sqlalchemy.orm import joinedload
 from functools import wraps
@@ -31,6 +30,8 @@ def token_required(f):
         try:
             data = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
             current_user = User.query.filter_by(id=data["user_id"]).first()
+            if not current_user:
+                return {"message": "Token is invalid"}, 401
         except Exception as e:
             return {"message": "Token is invalid"}, 401
         return f(current_user, *args, **kwargs)
@@ -38,9 +39,12 @@ def token_required(f):
 
 
 @app.route("/register", methods=["POST"])
+@limiter.limit("5 per minute")
 def register():
-    data = dict(request.json)
-    if not "username" in data.keys() or not "email" in data.keys() or not "password" in data.keys():
+    data = request.get_json(silent=True)
+    if not data:
+        return {"message": "Missing or invalid JSON body"}, 400
+    if "username" not in data or "email" not in data or "password" not in data:
         return {"message": "Missing data"}, 400
     if len(data["username"]) < 3 or len(data["username"]) > 20:
         return {"message": "Username must be between 3 and 20 characters long"}, 400
@@ -62,9 +66,12 @@ def register():
 
 
 @app.route("/login", methods=["POST"])
+@limiter.limit("10 per minute")
 def login():
-    data = dict(request.json)
-    if not "username" in data.keys() or not "password" in data.keys():
+    data = request.get_json(silent=True)
+    if not data:
+        return {"message": "Missing or invalid JSON body"}, 400
+    if "username" not in data or "password" not in data:
         return {"message": "Missing data"}, 400
     user = User.query.filter_by(username=data["username"]).first()
     if not user:
@@ -101,8 +108,10 @@ def whoami(current_user):
 @app.route("/tweet", methods=["POST"])
 @token_required
 def tweet(current_user):
-    data = dict(request.json)
-    if not "content" in data.keys():
+    data = request.get_json(silent=True)
+    if not data:
+        return {"message": "Missing or invalid JSON body"}, 400
+    if "content" not in data:
         return {"message": "Missing data"}, 400
     if len(data["content"]) < 1 or len(data["content"]) > 280:
         return {"message": "Tweet must be between 1 and 280 characters long"}, 400
@@ -146,8 +155,10 @@ def feed():
 @app.route("/like", methods=["POST"])
 @token_required
 def like(current_user):
-    data = dict(request.json)
-    if not "tweet_id" in data.keys():
+    data = request.get_json(silent=True)
+    if not data:
+        return {"message": "Missing or invalid JSON body"}, 400
+    if "tweet_id" not in data:
         return {"message": "Missing data"}, 400
     tweet = Tweet.query.filter_by(id=data["tweet_id"]).first()
     if not tweet:
